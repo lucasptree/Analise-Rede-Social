@@ -1,3 +1,4 @@
+# Bibliotecas
 !pip install pandas nltk scikit-learn wordcloud matplotlib networkx
 
 import pandas as pd
@@ -57,6 +58,7 @@ plt.show()
 print("\nTabela com as 50 palavras mais frequentes:")
 print(df_word_freq.head(50))
 
+# Bibliotecas
 pip install networkx
 
 import pandas as pd
