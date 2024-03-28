@@ -1,0 +1,177 @@
+!pip install pandas nltk scikit-learn wordcloud matplotlib networkx
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import networkx as nx
+import string  # Importe o módulo "string"
+
+# Função para pré-processamento de texto
+nltk.download('stopwords')
+nltk.download('punkt')
+stop_words = set(stopwords.words('portuguese'))
+
+def preprocess_text(text):
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    words = word_tokenize(text)
+    words = [word for word in words if word not in stop_words]
+    return " ".join(words)
+
+# Ler os dados do arquivo CSV para um DataFrame do pandas
+df = pd.read_csv("feedbacks.csv")  # Substitua "feedbacks.csv" pelo nome do arquivo organizado.
+
+# Pré-processamento de texto
+df['Preprocessed_Text'] = df['Feedback'].apply(preprocess_text)  # Substitua "Feedback" pelo nome da coluna que contém os feedbacks.
+
+# Análise de Frequência
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(df['Preprocessed_Text'])
+word_freq = zip(vectorizer.get_feature_names_out(), X.sum(axis=0).tolist()[0])
+word_freq = sorted(word_freq, key=lambda x: x[1], reverse=True)
+df_word_freq = pd.DataFrame(word_freq, columns=['Palavra', 'Frequência'])
+
+# Mostrar a tabela de contagem de frequência completa
+df_word_freq = pd.DataFrame(word_freq, columns=['Palavra', 'Frequência'])
+print(df_word_freq)
+
+# Gerar a nuvem de palavras
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(dict(word_freq))
+
+# Salvar a nuvem de palavras em formato SVG
+wordcloud_svg = wordcloud.to_svg()
+with open("wordcloud.svg", "w") as f:
+    f.write(wordcloud_svg)
+
+# Plotar a nuvem de palavras (opcional)
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.show()
+
+# Exibir tabela com as 50 palavras mais frequentes
+print("\nTabela com as 50 palavras mais frequentes:")
+print(df_word_freq.head(50))
+
+pip install networkx
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import string
+
+# Pré-processamento de texto
+nltk.download('stopwords')
+nltk.download('punkt')
+stop_words = set(stopwords.words('portuguese'))
+
+def preprocess_text(text):
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    words = word_tokenize(text)
+    words = [word for word in words if word not in stop_words]
+    return " ".join(words)
+
+# Ler os dados do arquivo CSV para um DataFrame do pandas
+df = pd.read_csv("feedbacks.csv")  # Substitua pelo nome do seu arquivo CSV
+
+# Pré-processamento de texto
+df['Preprocessed_Text'] = df['Feedback'].apply(preprocess_text)
+
+# Análise de Frequência
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(df['Preprocessed_Text'])
+word_freq = zip(vectorizer.get_feature_names_out(), X.sum(axis=0).tolist()[0])
+word_freq = sorted(word_freq, key=lambda x: x[1], reverse=True)
+
+# Extrair as palavras mais frequentes
+num_words = 150  # Número de palavras mais frequentes a considerar
+most_common_words = [word for word, _ in word_freq[:num_words]]
+
+# Vetorizar novamente usando apenas as palavras mais frequentes
+vectorizer = CountVectorizer(vocabulary=most_common_words)
+X = vectorizer.fit_transform(df['Preprocessed_Text'])
+
+# Aplicar o algoritmo de clustering (K-Means)
+num_clusters = 7  # Número de clusters desejado
+kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+clusters = kmeans.fit_predict(X)
+
+# Adicionar as informações de cluster ao DataFrame
+df['Cluster'] = clusters
+
+# Imprimir as 10 palavras mais frequentes de cada cluster
+for cluster_id in range(num_clusters):
+    cluster_indices = [idx for idx, label in enumerate(clusters) if label == cluster_id]
+    cluster_words = [word for word, _ in word_freq[:num_words] if most_common_words.index(word) in cluster_indices][:10]
+    max_freq_word = max(cluster_words, key=lambda word: word_freq_dict[word])
+    formatted_cluster_words = [f"**{word}**" if word == max_freq_word else word for word in cluster_words]
+    print(f"Cluster {cluster_id + 1}: {', '.join(formatted_cluster_words)}")
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.cluster import KMeans
+import string
+
+# Pré-processamento de texto
+nltk.download('stopwords')
+nltk.download('punkt')
+stop_words = set(stopwords.words('portuguese'))
+
+def preprocess_text(text):
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    words = word_tokenize(text)
+    words = [word for word in words if word not in stop_words]
+    return " ".join(words)
+
+# Ler os dados do arquivo CSV para um DataFrame do pandas
+df = pd.read_csv("feedbacks.csv")  # Substitua pelo nome do seu arquivo CSV
+
+# Pré-processamento de texto
+df['Preprocessed_Text'] = df['Feedback'].apply(preprocess_text)
+
+# Análise de Frequência
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(df['Preprocessed_Text'])
+word_freq = zip(vectorizer.get_feature_names_out(), X.sum(axis=0).tolist()[0])
+word_freq = sorted(word_freq, key=lambda x: x[1], reverse=True)
+word_freq_dict = dict(word_freq)  # Criar um dicionário para facilitar o acesso à frequência das palavras
+
+# Palavras específicas para criar clusters
+specific_words = ["devolução", "troca", "tamanho", "medida"]
+
+# Tabela para armazenar os resultados
+results = []
+
+# Criar um cluster para cada palavra específica e adicionar os resultados à tabela
+for word in specific_words:
+    cluster_indices = [idx for idx, row in df.iterrows() if word in row['Preprocessed_Text']]
+    cluster_words = [row['Preprocessed_Text'] for idx, row in df.iterrows() if idx in cluster_indices]
+    vectorizer = CountVectorizer()
+    X_cluster = vectorizer.fit_transform(cluster_words)
+    num_clusters = 1  # Número de clusters para cada palavra específica
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    clusters = kmeans.fit_predict(X_cluster)
+    cluster_words_freq = zip(vectorizer.get_feature_names_out(), X_cluster.sum(axis=0).tolist()[0])
+    cluster_words_freq = sorted(cluster_words_freq, key=lambda x: x[1], reverse=True)
+    cluster_words_top = [cw for cw, _ in cluster_words_freq[:10]]
+    results.append({"Palavra Específica": word, "Cluster": clusters[0], "Palavras Mais Frequentes": cluster_words_top})
+
+# Criar um DataFrame a partir dos resultados
+results_df = pd.DataFrame(results)
+
+# Exibir a tabela
+print(results_df)
+
